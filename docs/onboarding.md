@@ -209,9 +209,15 @@ profiles or a process shared by multiple profiles.
 Edit the default profile's `config.yaml` on the machine running Hermes:
 
 - Linux, macOS, and WSL: `~/.hermes/config.yaml`.
-- Native Windows: `%LOCALAPPDATA%\hermes\config.yaml`.
+- Native Windows: normally `%LOCALAPPDATA%\hermes\config.yaml`. On upgraded
+  installations, WebUI keeps using `%USERPROFILE%\.hermes\config.yaml` if the
+  legacy home has WebUI state and the new home does not yet have WebUI state.
 - If the running process sets `HERMES_HOME`, use `config.yaml` inside that
   directory instead of the platform default.
+
+Confirm the effective `config.yaml` path in the onboarding diagnostics before
+editing, especially on upgraded Windows installations. Use the reported path
+rather than creating a config at a different default location.
 
 Add this entry under the existing `mcp_servers` mapping, keeping other servers
 and settings intact. This example assumes the name `parallel` is unused. If an
