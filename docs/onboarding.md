@@ -196,14 +196,27 @@ isolated test install.
 After onboarding, you can add [Parallel Search MCP](https://docs.parallel.ai/integrations/mcp/search-mcp)
 for web search and page extraction without a Parallel account or API key.
 This uses Hermes Agent's existing remote MCP client over Streamable HTTP.
-Free access is rate limited.
+Free access is rate limited. Check the linked Parallel documentation for current
+access requirements and limits.
 
-Choose the profile you want to use, then edit that profile's `config.yaml` on
-the machine running Hermes. The default profile normally uses
-`~/.hermes/config.yaml`; named profiles use their own config files. Add this
-entry under the existing `mcp_servers` mapping, keeping other servers and
-settings intact. If you already have a server named `parallel`, choose another
-name instead of overwriting it.
+This walkthrough is for the default profile in a WebUI process that is not
+serving named profiles. WebUI's `/reload-mcp` is currently process-wide: it can
+disconnect other profiles' MCP servers and rediscover from the Agent's process
+home rather than the profile selected in WebUI. Switching profiles in the UI
+does not make reload profile-scoped. Do not use this reload workflow for named
+profiles or a process shared by multiple profiles.
+
+Edit the default profile's `config.yaml` on the machine running Hermes:
+
+- Linux, macOS, and WSL: `~/.hermes/config.yaml`.
+- Native Windows: `%LOCALAPPDATA%\hermes\config.yaml`.
+- If the running process sets `HERMES_HOME`, use `config.yaml` inside that
+  directory instead of the platform default.
+
+Add this entry under the existing `mcp_servers` mapping, keeping other servers
+and settings intact. This example assumes the name `parallel` is unused. If an
+entry with that name already exists, inspect it first; do not overwrite it or
+add a duplicate key.
 
 ```yaml
 mcp_servers:
@@ -217,19 +230,23 @@ call its tools during a conversation. Search queries, requested
 URLs, and any supplied objective or context go to Parallel. This adds MCP tools;
 it does not replace the built-in web tools or change their provider settings.
 
-In the same profile, run `/reload-mcp` in chat, then check **MCP Servers** and
-**MCP Tools** in Settings. If `parallel` initially appears unavailable while
+With the default profile selected, let active tool calls finish, then run
+`/reload-mcp` in chat. Check **MCP Servers** and **MCP Tools** in Settings.
+If `parallel` initially appears unavailable while
 reload is still running, wait for it to finish discovering tools, then refresh
 the panel. A configured server is not proof of a working
 connection: confirm that `parallel` is active and that `web_search` and
 `web_fetch` appear under it (Hermes prefixes their registered names with
-`mcp__parallel__`). Try asking Hermes to use Parallel to find a public
-documentation page and fetch its contents. Existing toolset selections still
-apply, so include the server's MCP toolset if your conversation restricts tools.
+`mcp__parallel__`). Ask Hermes to use Parallel to find a public
+documentation page and fetch its contents. Confirm that both tool calls
+succeed; configuration and Settings status alone do not prove readiness.
+Existing toolset selections still apply, so include the server's MCP toolset if
+your conversation restricts tools.
 
 To stop using it, disable the server in **MCP Servers** or remove only its entry
-from the profile config, then run `/reload-mcp` again. Reload reconnects MCP
-servers, so wait for active tool calls to finish first.
+from the default profile config, then run `/reload-mcp` again under the same
+single-profile conditions. Reload reconnects MCP servers process-wide, so wait
+for active tool calls to finish first.
 
 If reload reports `MCP runtime unavailable`, check the Hermes Agent installation
 using [Troubleshooting](troubleshooting.md). Docker users should also check the
